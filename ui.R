@@ -21,7 +21,14 @@ shinyUI(fluidPage(
       wellPanel(
         sliderInput("obs", "# of Observations", min = 1000, max = 10000, 
           value = 1000, step = 1000, ticks = FALSE),
-        numericInput("n_insurees", "Number of Insurees", value = 5)
+        numericInput("n_insurees", "Number of Insurees", value = 5),
+        sliderInput("i", 
+                    "Interest Rate", 
+                    min = 0,
+                    max = 1,
+                    step = 0.01,
+                    value = 0.04,
+                    ticks = FALSE)
       ),
         
       wellPanel( 
@@ -29,23 +36,22 @@ shinyUI(fluidPage(
           value = 50
         ),
         selectInput("gender", "Gender",
-                     choices = c("Male", "Female")
+                     choices = c("Male", "Female"),
+                    selected = "Male"
         ),
         numericInput("m_", "Deferral",
                      value = 0
         ),
         numericInput("t_", "Term",
           value = 5
+        ),
+        numericInput("benefit", "Death Benefit",
+                     value = 500000
         )
       ),
       
       wellPanel(
-        h5("Frequency Parameters"),
-        uiOutput("freq_param_boxes"),
-        br(),
-        h5("Severity Parameters"),
-        uiOutput("sev_param_boxes"),
-        actionButton("run_freq", "Run Simulation")
+        actionButton("run_sim", "Run Simulation")
       )
     ),
     
@@ -57,22 +63,20 @@ shinyUI(fluidPage(
         
         tabsetPanel(
           tabPanel("Histogram", 
-            plotOutput("hist_plot"),
-            plotOutput("hist_plot_total")
-          ),
-          tabPanel("CDF", 
-            plotOutput("cdf"),
-            plotOutput("cdf_total")
-          ),
-          tabPanel("VaR Table", 
-            dataTableOutput("sorter")
-          ),
-          tabPanel("Download", 
-            wellPanel(
-              h5("Download Summary Table"),
-                downloadButton("download_summary", "Download Summary")
-            )
+            dataTableOutput("test")
           )
+          #tabPanel("CDF", 
+          #  plotOutput("cdf")
+          #),
+          #tabPanel("VaR Table", 
+          #  dataTableOutput("sorter")
+          #),
+          #tabPanel("Download", 
+          #  wellPanel(
+          #    h5("Download Summary Table"),
+          #      downloadButton("download_summary", "Download Summary")
+          #  )
+          #)
         )
       )
     )
