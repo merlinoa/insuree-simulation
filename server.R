@@ -78,29 +78,27 @@ shinyServer(function(input, output) {
   #    ggtitle("Death Benefit Present Value")
   #})
   
-  #data_table <- reactive({
-  #  table_values <- function(obs) {
-  #    percentile <- c(.999, 0.995, seq(0.99, 0.9, -0.01), seq(0.85, 0.05, by = -0.05))
-  #    points <- quantile(obs, percentile)
-  #    obs_mean <- mean(obs)
-  #    c(obs_mean, points)
-  #  }
-  #  
-  #  benefit <- table_values(benefit())
-  #  
-  #  out <- data.frame(Net, Gross)
-  #    
-  #  cbind("Value At Risk" = c("mean", rownames(out)[-1]), out)
-  #})
+  data_table <- reactive({
+    table_values <- function(obs) {
+      percentile <- c(.999, 0.995, seq(0.99, 0.9, -0.01), seq(0.85, 0.05, by = -0.05))
+      points <- quantile(obs, percentile)
+      obs_mean <- mean(obs)
+      c(obs_mean, points)
+    }
+    
+    benefit <- table_values(benefit())
+      
+    cbind("Value At Risk" = c("mean", rownames(benefit)[-1]), benefit)
+  })
   
-  #output$sorter <- renderDataTable({
-  #  format(data_table(), 
-  #    digits = 0, 
-  #    big.mark = ",", 
-  #    scientific = FALSE, 
-  #    justify = "right"
-  #  )
-  #})
+  output$sorter <- DT::renderDataTable({
+    format(data_table(), 
+      digits = 0, 
+      big.mark = ",", 
+      scientific = FALSE, 
+      justify = "right"
+    )
+  })
   
   # create downloadable table
   #output$download_summary <- downloadHandler(

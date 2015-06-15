@@ -1,4 +1,5 @@
 library(shinythemes)
+library(DT)
 
 shinyUI(fluidPage(
   theme = shinytheme("spacelab"),
@@ -64,13 +65,13 @@ shinyUI(fluidPage(
         tabsetPanel(
           tabPanel("Histogram", 
             dataTableOutput("test")
-          )
+          ),
           #tabPanel("CDF", 
           #  plotOutput("cdf")
           #),
-          #tabPanel("VaR Table", 
-          #  dataTableOutput("sorter")
-          #),
+          tabPanel("VaR Table", 
+            DT::dataTableOutput("sorter")
+          )
           #tabPanel("Download", 
           #  wellPanel(
           #    h5("Download Summary Table"),
