@@ -2,62 +2,78 @@ library(shiny)
 library(ggplot2)
 library(scales)
 library(insuree)
+library(lubridate)
 
 shinyServer(function(input, output) {
+  
+  insurees_data <- reactive({
+    df <- read.csv(file = "data/policies.csv")
+    df$dob <- as.Date(df$dob, format = "%m/%d/%Y")
+    df
+  })
   
   # record number of observations
   n <- reactive({
     input$obs
   })
   
-  # number of insurees
-  #n_insuree <- reactive({
-  #  input$n_insuree
-  #})
+  # male actuarial tables
+  male_qx <- reactive({
+    qx_male <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
+    qx_male <- insuree::ActuarialTable(i = rep(input$i, 
+                                    times = length(qx_male@x)), qx_male)
+  })
   
-  # create input boxes for n_insurees
-  #output$insuree_boxes <- renderUI({
-    #lapply(1:n_insuree(), function(i) {
-    #  numericInput(inputId = paste0("insuree", i), 
-    #              label = "Age", 
-    #              value = "Term"
-    #              )
-    #})
-  #})
+  # female actuarial table
+  female_qx <- reactive({
+    qx_female <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
+    insuree::ActuarialTable(i = rep(input$i, times = length(qx_female@x)), qx_female)
+  })
   
-  # actuarial table
-  a_table <- reactive({
-    if (input$gender == "Male") {
-      qx_male <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
-      insuree::ActuarialTable(i = rep(input$i, times = length(qx_male@x)), qx_male)
-    } else {
-      qx_female <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
-      insuree::ActuarialTable(i = rep(input$i, times = length(qx_female@x)), qx_female)
-    }
+  # find curtate age (could improve this)
+  curtate_x_ <- reactive({
+    as.numeric(year(Sys.Date()) - year(insurees_data()$dob)) 
   })
   
   # create insuree objects
   insurees <- reactive({
-    #isolate({
-    #  lapply(1:n_insuree(), function(x){
-        insuree::Insuree(x_ = input$x_,
-                         t_ = input$t_,
-                         m_ = input$m_,
-                         benefit = rep(input$benefit,
-                                       times = input$t_),
-                         a_table())
-    #  })
-    #})
+    my_table <- insurees_data()
+    k <- curtate_x_()
+    holder <- list()
+    for (j in 1:nrow(my_table)) {
+      if (my_table$gender[j] == "male") {
+        holder[[j]] <- insuree::Insuree(x_ = k[j],
+                                        t_ = my_table$term[j],
+                                        m_ = my_table$deferral[j],
+                                        benefit = rep(my_table$benefit[j],
+                                                      times = my_table$term[j]),
+                                        male_qx()
+                                        )
+      } else {
+        holder[[j]] <- insuree::Insuree(x_ = k[j],
+                                        t_ = my_table$term[j],
+                                        m_ = my_table$deferral[j],
+                                        benefit = rep(my_table$benefit[j],
+                                                      times = my_table$term[j]),
+                                        female_qx()
+                                       )
+      }
+    }
+    holder
   })
   
   # run simulation
   benefit <- reactive({
-    insuree::rpv(insurees(), n = input$obs)
+    out <-lapply(insurees(), function(k) insuree::rpv(k, n = input$obs)$pv)
+    out <- matrix(unlist(out), ncol = input$obs, byrow = TRUE)
+    apply(out, 2, sum)
   })
   
   # start of output ----------------------------------------------------------
-  output$test <- renderDataTable({
-    as.data.frame(quantile(benefit(), seq(0.5, 0.95, by = 0.05)))
+  
+  # insuree table ---------------------------------
+  output$insuree_table <- DT::renderDataTable({
+    insurees_data() 
   })
   
   #output$hist_plot <- renderPlot({
@@ -86,18 +102,13 @@ shinyServer(function(input, output) {
       c(obs_mean, points)
     }
     
-    benefit <- table_values(benefit())
+    out <- table_values(benefit())
       
-    cbind("Value At Risk" = c("mean", rownames(benefit)[-1]), benefit)
+    cbind("Value At Risk" = c("mean", names(out)[-1]), out)
   })
   
   output$sorter <- DT::renderDataTable({
-    format(data_table(), 
-      digits = 0, 
-      big.mark = ",", 
-      scientific = FALSE, 
-      justify = "right"
-    )
+    data_table()
   })
   
   # create downloadable table
