@@ -136,15 +136,4 @@ shinyServer(function(input, output) {
   output$sorter <- DT::renderDataTable({
     data_table()
   })
-  
-  # create downloadable table
-  #output$download_summary <- downloadHandler(
-  #  filename = function() {paste0("ractuary-insuree-sim-", Sys.Date(), ".csv")},
-  #  content = function(file) {
-  #    write.csv(data_table(), 
-  #      file = file,
-  #      row.names = FALSE
-  #    )
-  #  }
-  #)
 })

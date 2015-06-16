@@ -10,14 +10,14 @@ sidebar <- dashboardSidebar(
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
     menuItem("Insurees", tabName = "insurees", icon = icon("group")),
     menuItem("Reserve Simulation", tabName = "simulation", icon = icon("money"),
-      menuSubItem("Assumptions", tabName = "assumptions", icon = icon("tasks")),
       sliderInput("i", 
                   "Interest Rate", 
                   min = 0,
-                  max = 0.15,
+                  max = 0.10,
                   step = 0.01,
                   value = 0.04,
                   ticks = TRUE),
+      menuSubItem("Assumptions", tabName = "assumptions", icon = icon("tasks")),
       menuSubItem("Results", tabName = "results", icon = icon("fighter-jet"))
     )
   )
@@ -45,22 +45,6 @@ body <- dashboardBody(
         )
       )
     ),
-    tabItem(tabName = "assumptions",
-      fluidRow(
-        box(width = 12, 
-            p("Mortality is simulated in accordance with the ", 
-              a(href = "http://www.ssa.gov/oact/STATS/table4c6.html", 
-                "Official US Social Secuity Actuarial Table"),".  The
-                probability of death at future time periods depends on
-                the age and gender of the insuree.  The future life of each
-                individual is simulated 5,000 times.  The ", code("insuree"), " 
-                R package is used to run the simulation.  To learn more 
-                about the ", code("insuree"), "package see ", 
-              a(href = "https://github.com/merlinoa/insuree", "the GitHub repository.")
-            )
-        )
-      )
-    ),
     # simulation results tab
     tabItem(tabName = "results", 
       fluidRow(
@@ -75,6 +59,22 @@ body <- dashboardBody(
                    plotOutput("cdf")
           )
         )     
+      )
+    ),
+    tabItem(tabName = "assumptions",
+      fluidRow(
+        box(width = 12, 
+          p("Mortality is simulated in accordance with the ", 
+            a(href = "http://www.ssa.gov/oact/STATS/table4c6.html", 
+            "Official US Social Secuity Actuarial Table"),".  The
+            probability of death at future time periods depends on
+            the age and gender of the insuree.  The future life of each
+            individual is simulated 5,000 times.  The ", code("insuree"), " 
+            R package is used to run the simulation.  To learn more 
+            about the ", code("insuree"), "package see ", 
+            a(href = "https://github.com/merlinoa/insuree", "the GitHub repository.")
+          )
+        )
       )
     )
   )
