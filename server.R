@@ -4,17 +4,15 @@ library(scales)
 library(insuree)
 library(lubridate)
 
+# number of observations
+n <- 5000
+
 shinyServer(function(input, output) {
   
   insurees_data <- reactive({
     df <- read.csv(file = "data/policies.csv")
     df$dob <- as.Date(df$dob, format = "%m/%d/%Y")
     df
-  })
-  
-  # record number of observations
-  n <- reactive({
-    input$obs
   })
   
   # male actuarial tables
@@ -64,39 +62,65 @@ shinyServer(function(input, output) {
   
   # run simulation
   benefit <- reactive({
-    out <-lapply(insurees(), function(k) insuree::rpv(k, n = input$obs)$pv)
-    out <- matrix(unlist(out), ncol = input$obs, byrow = TRUE)
+    out <-lapply(insurees(), function(k) insuree::rpv(k, n = n)$pv)
+    out <- matrix(unlist(out), ncol = n, byrow = TRUE)
     apply(out, 2, sum)
   })
   
-  # start of output ----------------------------------------------------------
+  # start of display ----------------------------------------------------------
+  # dashboard -----------------------------
+  output$n_insurees <- renderValueBox({
+    total_insurees <- nrow(insurees_data())
+    valueBox(
+      value = total_insurees,
+      subtitle = "In Force Policies",
+      icon = icon("group")
+    )
+  })
+  
+  output$avg_age <- renderValueBox({
+    a_age <- mean(curtate_x_())
+    valueBox(
+      value = a_age,
+      subtitle = "Average Insuree Age",
+      icon = icon("heartbeat"),
+      color = "yellow"
+    )
+  })
+  
+  output$reserve <- renderText({
+    format(round(quantile(benefit(), input$ci),0), big.mark = ",")
+  })
   
   # insuree table ---------------------------------
   output$insuree_table <- DT::renderDataTable({
-    insurees_data() 
+    datatable(insurees_data(),
+              rownames = FALSE
+              ) %>%
+      formatCurrency("benefit")
   })
   
-  #output$hist_plot <- renderPlot({
-  #  ggplot(benefit(), aes(x = agg_loss)) +
-  #    geom_histogram(fill = "white", colour = "black") +
-  #    scale_x_continuous(labels = dollar) +
-  #    xlab("Benefit per Observation") +
-  #    ylab("Count of Observations") +
-  #    ggtitle("Death Benefit Present Value")
-  #})
+  output$hist_plot <- renderPlot({
+    ggplot(data.frame(loss = benefit()), aes(x = loss)) +
+      geom_histogram(fill = "white", colour = "black") +
+      scale_x_continuous(labels = dollar) +
+      xlab("Benefit Payments") +
+      ylab("Count of Observations") +
+      ggtitle("Present Value of Death Benefit for all Insurees")
+  })
   
-  #output$cdf <- renderPlot({
-  #  ggplot(benefit(), aes(agg_loss)) +
-  #    stat_ecdf() +
-  #    xlab("Benefit per Observation") +
-  #    ylab("P(benefit <= x)") +
-  #    scale_x_continuous(labels = dollar) +
-  #    ggtitle("Death Benefit Present Value")
-  #})
+  output$cdf <- renderPlot({
+    ggplot(data.frame(loss = benefit()), aes(x = loss)) +
+      stat_ecdf() +
+      xlab("Benefit Payments") +
+      ylab("P(benefit <= x)") +
+      scale_x_continuous(labels = dollar) +
+      ggtitle("Present Value of Death Benefit for all Insurees")
+  })
   
   data_table <- reactive({
     table_values <- function(obs) {
-      percentile <- c(.999, 0.995, seq(0.99, 0.9, -0.01), seq(0.85, 0.05, by = -0.05))
+      percentile <- c(0.995, 0.99, seq(0.95, 0.05, by = -0.05))
       points <- quantile(obs, percentile)
       obs_mean <- mean(obs)
       c(obs_mean, points)
@@ -104,7 +128,9 @@ shinyServer(function(input, output) {
     
     out <- table_values(benefit())
       
-    cbind("Value At Risk" = c("mean", names(out)[-1]), out)
+    datatable(cbind("Confidence Level" = c("mean", names(out)[-1]), "Value" = round(out, 0)),
+                    rownames = FALSE) %>%
+                formatCurrency(2)
   })
   
   output$sorter <- DT::renderDataTable({
