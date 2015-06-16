@@ -83,13 +83,19 @@ shinyServer(function(input, output) {
     valueBox(
       value = a_age,
       subtitle = "Average Insuree Age",
-      icon = icon("heartbeat"),
+      icon = icon("calendar"),
       color = "yellow"
     )
   })
   
-  output$reserve <- renderText({
-    format(round(quantile(benefit(), input$ci),0), big.mark = ",")
+  output$reserve <- renderValueBox({
+    reserve_ci <- format(round(quantile(benefit(), input$ci),0), big.mark = ",")
+    valueBox(
+      value = reserve_ci,
+      subtitle = "Reserve at Variable Confidence Level",
+      icon = icon("money"),
+      color = "green"
+    )
   })
   
   # insuree table ---------------------------------
