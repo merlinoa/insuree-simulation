@@ -4,14 +4,45 @@ library(scales)
 library(insuree)
 library(lubridate)
 
-# number of observations
+# some data
 n <- 5000
+df <- read.csv(file = "data/policies.csv")
+
+# convert dates to YYYY-MM-DD format
+df$dob <- as.Date(df$dob, format = "%m/%d/%Y")
+df$issue_date <- as.Date(df$issue_date, format = "%m/%d/%Y")
+
+# find other dates and intervals of interest
+df$effective <- df$issue_date + years(df$deferral)
+df$expiration <- df$effective + years(df$term)
+
 
 shinyServer(function(input, output) {
+  # find insuree exact age
+  age <- reactive({
+    inter <-  interval(df$dob, Sys.Date())
+    inter / dyears(1)
+  })
   
+  # unexpired deferral period
+  unearned_m_ <- reactive({
+    inter <- interval(Sys.Date(), df$effective)
+    pmax(inter / dyears(1), 0)
+  })
+  
+  # unexpired term period
+  unearned_t_ <- reactive({
+    inter <- inter <- interval(Sys.Date(), df$expiration)
+    pmin(inter / dyears(1), df$term)
+  })
+  
+  # benefit length
+  benefit_length <- reactive({
+    ceiling(age() + unearned_t_()) - floor(age())
+  })
+  
+  # data frame to display
   insurees_data <- reactive({
-    df <- read.csv(file = "data/policies.csv")
-    df$dob <- as.Date(df$dob, format = "%m/%d/%Y")
     df
   })
   
@@ -28,31 +59,26 @@ shinyServer(function(input, output) {
     insuree::ActuarialTable(i = rep(input$i, times = length(qx_female@x)), qx_female)
   })
   
-  # find curtate age (could improve this)
-  curtate_x_ <- reactive({
-    as.numeric(year(Sys.Date()) - year(insurees_data()$dob)) 
-  })
-  
   # create insuree objects
   insurees <- reactive({
     my_table <- insurees_data()
-    k <- curtate_x_()
+    k <- age()
     holder <- list()
     for (j in 1:nrow(my_table)) {
       if (my_table$gender[j] == "male") {
         holder[[j]] <- insuree::Insuree(x_ = k[j],
-                                        t_ = my_table$term[j],
-                                        m_ = my_table$deferral[j],
+                                        t_ = unearned_t_()[j],
+                                        m_ = unearned_m_()[j],
                                         benefit = rep(my_table$benefit[j],
-                                                      times = my_table$term[j]),
+                                                      times = benefit_length()[j]),
                                         male_qx()
                                         )
       } else {
         holder[[j]] <- insuree::Insuree(x_ = k[j],
-                                        t_ = my_table$term[j],
-                                        m_ = my_table$deferral[j],
+                                        t_ = unearned_t_()[j],
+                                        m_ = unearned_m_()[j],
                                         benefit = rep(my_table$benefit[j],
-                                                      times = my_table$term[j]),
+                                                      times = benefit_length()[j]),
                                         female_qx()
                                        )
       }
@@ -79,7 +105,7 @@ shinyServer(function(input, output) {
   })
   
   output$avg_age <- renderValueBox({
-    a_age <- mean(curtate_x_())
+    a_age <- round(mean(age()),2)
     valueBox(
       value = a_age,
       subtitle = "Average Insuree Age",
@@ -89,7 +115,7 @@ shinyServer(function(input, output) {
   })
   
   output$reserve <- renderValueBox({
-    reserve_ci <- format(round(quantile(benefit(), input$ci),0), big.mark = ",")
+    reserve_ci <- format(round(quantile(benefit(), input$ci) ,0), big.mark = ",")
     valueBox(
       value = reserve_ci,
       subtitle = "Reserve at Variable Confidence Level",
