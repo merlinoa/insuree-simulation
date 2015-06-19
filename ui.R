@@ -6,6 +6,10 @@ header <- dashboardHeader(
           )
 
 sidebar <- dashboardSidebar(
+  dateInput("date", "Reserve Date", value = Sys.Date(), 
+            min = as.Date("2015-01-01"), 
+            max = Sys.Date()
+            ),
   sliderInput("i", 
               "Interest Rate", 
               min = 0,
