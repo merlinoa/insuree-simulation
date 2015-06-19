@@ -20,19 +20,19 @@ df$expiration <- df$effective + years(df$term)
 shinyServer(function(input, output) {
   # find insuree exact age
   age <- reactive({
-    inter <-  interval(df$dob, Sys.Date())
+    inter <-  interval(df$dob, input$date)
     inter / dyears(1)
   })
   
   # unexpired deferral period
   unearned_m_ <- reactive({
-    inter <- interval(Sys.Date(), df$effective)
+    inter <- interval(input$date, df$effective)
     pmax(inter / dyears(1), 0)
   })
   
   # unexpired term period
   unearned_t_ <- reactive({
-    inter <- inter <- interval(Sys.Date(), df$expiration)
+    inter <- inter <- interval(input$date, df$expiration)
     pmin(inter / dyears(1), df$term)
   })
   
@@ -43,7 +43,8 @@ shinyServer(function(input, output) {
   
   # data frame to display
   insurees_data <- reactive({
-    df
+    l <- length(names(df))
+    df[, -c(l, l - 1)]
   })
   
   # male actuarial tables
@@ -88,6 +89,7 @@ shinyServer(function(input, output) {
   
   # run simulation
   benefit <- reactive({
+    set.seed(12345)
     out <-lapply(insurees(), function(k) insuree::rpv(k, n = n)$pv)
     out <- matrix(unlist(out), ncol = n, byrow = TRUE)
     apply(out, 2, sum)
