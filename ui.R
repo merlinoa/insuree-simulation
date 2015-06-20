@@ -6,6 +6,10 @@ header <- dashboardHeader(
           )
 
 sidebar <- dashboardSidebar(
+  dateInput("date", "Reserve Evaluation Date", value = Sys.Date(), 
+            min = as.Date("2015-01-01"), 
+            max = Sys.Date()
+            ),
   sliderInput("i", 
               "Interest Rate", 
               min = 0,
@@ -29,10 +33,10 @@ body <- dashboardBody(
     tabItem(tabName = "dashboard",
       fluidRow(
         box(width = 6,
-            title = "Reserve Inputs",
+            title = "Reserve Confidence Level",
             solidHeader = TRUE,
             status = "success",
-          sliderInput(label = "Confidence Level",
+          sliderInput(label = "",
                       inputId = "ci",
                       value = 0.75,
                       min = 0.25,
