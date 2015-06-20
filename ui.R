@@ -79,16 +79,15 @@ body <- dashboardBody(
             a(href = "http://www.ssa.gov/oact/STATS/table4c6.html", 
             "Official US Social Secuity Actuarial Table"),".  The
             probability of death at future time periods depends on
-            the age and gender of each individual insuree.  Curtate age is used for
-            the insueer's age (i.e. the age is rounded down to the nearest whole year) (e.g 
-            if the insurees is 50 and 3 months, 50 will be used for that insuree's age.)"),
+            the age and gender of each individual insuree. The age of each
+            insuree is resorded to the day, so the simulation uses different
+            ages depending on the day it is run."),
           h2("Benefit / Policy"),
           p("The benefit payment for each policy is paid if the insuree dies
             within the term specified by the insuree's policy.  The insuree can 
             choose to have a deferral period before the term period begins.  If the
             insuree dies during the deferral period, no beath benefit will be paid.
-            All death benefits are paid at the end of the year of death.  For simplification
-            all policies are assume to be effective today"),
+            All death benefits are paid at the end of the term year of death."),
           h3("Simulation General"),
           p("The future life of each insuree is simulated 5,000 times.  The reserve confidence 
             levels are established for all insurees grouped together.  The ", code("insuree"), " 
