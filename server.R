@@ -94,7 +94,7 @@ shinyServer(function(input, output) {
   # run simulation
   benefit <- reactive({
     set.seed(12345)
-    out <-lapply(insurees(), function(k) insuree::rpv(k, n = n)$pv)
+    out <-lapply(insurees()[df$issue_date <= input$date], function(k) insuree::rpv(k, n = n)$pv)
     out <- matrix(unlist(out), ncol = n, byrow = TRUE)
     apply(out, 2, sum)
   })
@@ -102,10 +102,28 @@ shinyServer(function(input, output) {
   # start of display ----------------------------------------------------------
   # dashboard -----------------------------
   output$n_insurees <- renderValueBox({
-    total_insurees <- nrow(insurees_data())
+    total_insurees <- nrow(insurees_data()[df$issue_date <= input$date, ])
     valueBox(
       value = total_insurees,
-      subtitle = "In Force Policies",
+      subtitle = "Non Expired Policies",
+      icon = icon("group")
+    )
+  })
+  
+  output$n_deferral <- renderValueBox({
+    n_deferral <- length(unearned_m_()[unearned_m_() > 0 & df$issue_date <= input$date])
+    valueBox(
+      value = n_deferral,
+      subtitle = "Policies in Deferral Period",
+      icon = icon("group")
+    )
+  })
+  
+  output$n_effective <- renderValueBox({
+    n_effective <- length(unearned_t_()[unearned_m_() == 0 & unearned_t_() > 0 & df$issue_date <= input$date])
+    valueBox(
+      value = n_effective,
+      subtitle = "Policies in Term Period",
       icon = icon("group")
     )
   })
@@ -120,11 +138,12 @@ shinyServer(function(input, output) {
     )
   })
   
-  output$reserve <- renderValueBox({
+  output$reserve <- renderInfoBox({
     reserve_ci <- format(round(quantile(benefit(), input$ci) ,0), big.mark = ",")
-    valueBox(
+    infoBox(
+      title = "Reserve",
       value = reserve_ci,
-      subtitle = "Reserve at Variable Confidence Level",
+      subtitle = "Discounted for mortality and interest",
       icon = icon("money"),
       color = "green"
     )

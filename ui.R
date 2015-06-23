@@ -44,10 +44,14 @@ body <- dashboardBody(
                       step = 0.01
           )
         ),
-        valueBoxOutput("reserve", width = 6)
+        infoBoxOutput("reserve", width = 6)
       ),
       fluidRow(
-        valueBoxOutput("n_insurees", width = 6),
+        valueBoxOutput("n_insurees", width = 4),
+        valueBoxOutput("n_deferral", width = 4),
+        valueBoxOutput("n_effective", width = 4)
+      ),
+      fluidRow(
         valueBoxOutput("avg_age", width = 6)
       )
     ),
@@ -84,14 +88,18 @@ body <- dashboardBody(
             "Official US Social Secuity Actuarial Table"),".  The
             probability of death at future time periods depends on
             the age and gender of each individual insuree. The age of each
-            insuree is resorded to the day, so the simulation uses different
+            insuree is recorded to the day, so the simulation uses different
             ages depending on the day it is run."),
           h2("Benefit / Policy"),
           p("The benefit payment for each policy is paid if the insuree dies
             within the term specified by the insuree's policy.  The insuree can 
             choose to have a deferral period before the term period begins.  If the
             insuree dies during the deferral period, no beath benefit will be paid.
-            All death benefits are paid at the end of the term year of death."),
+            All death benefits are paid at the midpoint of the term year of death, unless the
+            insuree dies during a partial year in which case the benefit is paid at the midpoint
+            of the partial year period. (e.g. if the insuree is 75.5 at the reserve evaluation date,
+            and the simulation has her dying between age 75.5 and age 76, the benefit benefit will be discounted for 0.25
+            years.)"),
           h3("Simulation General"),
           p("The future life of each insuree is simulated 5,000 times.  The reserve confidence 
             levels are established for all insurees grouped together.  The ", code("insuree"), " 
