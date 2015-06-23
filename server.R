@@ -105,7 +105,7 @@ shinyServer(function(input, output) {
     total_insurees <- nrow(insurees_data()[df$issue_date <= input$date, ])
     valueBox(
       value = total_insurees,
-      subtitle = "Non Expired Policies",
+      subtitle = "Total Non Expired",
       icon = icon("group")
     )
   })
@@ -114,8 +114,8 @@ shinyServer(function(input, output) {
     n_deferral <- length(unearned_m_()[unearned_m_() > 0 & df$issue_date <= input$date])
     valueBox(
       value = n_deferral,
-      subtitle = "Policies in Deferral Period",
-      icon = icon("group")
+      subtitle = "In Deferral Period",
+      icon = icon("user")
     )
   })
   
@@ -123,8 +123,38 @@ shinyServer(function(input, output) {
     n_effective <- length(unearned_t_()[unearned_m_() == 0 & unearned_t_() > 0 & df$issue_date <= input$date])
     valueBox(
       value = n_effective,
-      subtitle = "Policies in Term Period",
-      icon = icon("group")
+      subtitle = "In Term Period",
+      icon = icon("male")
+    )
+  })
+  
+  output$b_insurees <- renderValueBox({
+    total_insurees <- sum(insurees_data()$benefit[df$issue_date <= input$date])
+    valueBox(
+      value = format(total_insurees, big.mark = ","),
+      subtitle = "Total Non Expired",
+      icon = icon("group"),
+      color = "yellow"
+    )
+  })
+  
+  output$b_deferral <- renderValueBox({
+    b_deferral <- sum(insurees_data()$benefit[unearned_m_() > 0 & df$issue_date <= input$date])
+    valueBox(
+      value = format(b_deferral, big.mark = ","),
+      subtitle = "In Deferral Period",
+      icon = icon("user"),
+      color = "yellow"
+    )
+  })
+  
+  output$b_effective <- renderValueBox({
+    b_effective <- sum(insurees_data()$benefit[unearned_m_() == 0 & unearned_t_() > 0 & df$issue_date <= input$date])
+    valueBox(
+      value = format(b_effective, big.mark = ","),
+      subtitle = "In Term Period",
+      icon = icon("male"),
+      color = "yellow"
     )
   })
   
@@ -134,7 +164,7 @@ shinyServer(function(input, output) {
       value = a_age,
       subtitle = "Average Insuree Age",
       icon = icon("calendar"),
-      color = "yellow"
+      color = "purple"
     )
   })
   

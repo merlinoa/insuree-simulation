@@ -47,9 +47,22 @@ body <- dashboardBody(
         infoBoxOutput("reserve", width = 6)
       ),
       fluidRow(
+        box(width = 12,
+            height = 175,
+        title = "Number of Policies",
         valueBoxOutput("n_insurees", width = 4),
         valueBoxOutput("n_deferral", width = 4),
         valueBoxOutput("n_effective", width = 4)
+        )
+      ),
+      fluidRow(
+        box(width = 12,
+            height = 175,
+            title = "Undiscounted Benefits",
+            valueBoxOutput("b_insurees", width = 4),
+            valueBoxOutput("b_deferral", width = 4),
+            valueBoxOutput("b_effective", width = 4)
+        )
       ),
       fluidRow(
         valueBoxOutput("avg_age", width = 6)
