@@ -32,13 +32,13 @@ shinyServer(function(input, output) {
   
   # unexpired term period
   unearned_t_ <- reactive({
-    inter <- inter <- interval(input$date, df$expiration)
+    inter <- interval(input$date, df$expiration)
     pmin(inter / dyears(1), df$term)
   })
   
   # benefit length
   benefit_length <- reactive({
-    ceiling(age() + unearned_t_()) - floor(age())
+    ceiling(age() + unearned_t_() + unearned_m_()) - floor(age() + unearned_m_())
   })
   
   # data frame to display
@@ -49,14 +49,18 @@ shinyServer(function(input, output) {
   
   # male actuarial tables
   male_qx <- reactive({
-    qx_male <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
+    qx_male <- insuree::LifeTable(x = qx_data$x,
+                                  t = rep(1, length(qx_data$x)),
+                                  q_x = qx_data$male_qx)
     qx_male <- insuree::ActuarialTable(i = rep(input$i, 
                                     times = length(qx_male@x)), qx_male)
   })
   
   # female actuarial table
   female_qx <- reactive({
-    qx_female <- insuree::LifeTable(x = qx_data$x, q_x = qx_data$male_qx)
+    qx_female <- insuree::LifeTable(x = qx_data$x,
+                                    t = rep(1, length(qx_data$x)),
+                                    q_x = qx_data$female_qx)
     insuree::ActuarialTable(i = rep(input$i, times = length(qx_female@x)), qx_female)
   })
   
