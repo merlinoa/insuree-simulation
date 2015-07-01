@@ -168,8 +168,12 @@ shinyServer(function(input, output) {
     )
   })
   
+  reserve_n <- reactive({
+    quantile(benefit(), input$ci)
+  })
+  
   output$reserve <- renderInfoBox({
-    reserve_ci <- format(round(quantile(benefit(), input$ci) ,0), big.mark = ",")
+    reserve_ci <- format(round(reserve_n() ,0), big.mark = ",")
     infoBox(
       title = "Reserve",
       value = reserve_ci,
@@ -191,19 +195,21 @@ shinyServer(function(input, output) {
     ggplot(data.frame(loss = benefit()), aes(x = loss)) +
       geom_histogram(fill = "white", colour = "black") +
       scale_x_continuous(labels = dollar) +
-      xlab("Benefit Payments") +
+      xlab("Reserve") +
       ylab("Observations") +
-      ggtitle("Present Value of Death Benefits")
+      ggtitle("Present Value of Death Benefits") +
+      geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
   },
   height = 200)
   
   output$cdf <- renderPlot({
     ggplot(data.frame(loss = benefit()), aes(x = loss)) +
       stat_ecdf() +
-      xlab("Benefit Payments") +
+      xlab("Reserve") +
       ylab("P(benefit <= x)") +
       scale_x_continuous(labels = dollar) +
-      ggtitle("Present Value of Death Benefits")
+      ggtitle("Present Value of Death Benefits") +
+      geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
   },
   height = 200)
   
