@@ -32,19 +32,34 @@ body <- dashboardBody(
     # dashboard tab
     tabItem(tabName = "dashboard",
       fluidRow(
-        box(width = 6,
-            title = "Reserve Confidence Level",
-            solidHeader = TRUE,
-            status = "success",
-          sliderInput(label = "",
-                      inputId = "ci",
-                      value = 0.75,
-                      min = 0.25,
-                      max = 1.0,
-                      step = 0.01
-          )
+        column(width = 6,
+          box(width = 12,
+              title = "Reserve Confidence Level",
+              solidHeader = TRUE,
+              status = "success",
+            sliderInput(label = "",
+                        inputId = "ci",
+                        value = 0.75,
+                        min = 0.25,
+                        max = 1.0,
+                        step = 0.01
+            )
+          ),
+          infoBoxOutput("reserve", width = 12)
         ),
-        infoBoxOutput("reserve", width = 6)
+        column(width = 6,
+          tabBox(width = 12,
+                 height = 200,
+            tabPanel(title = "Histogram",
+                     plotOutput("hist_plot",
+                                height = 200)
+            ),
+            tabPanel(title = "CDF",
+                     plotOutput("cdf",
+                                height = 200)
+            )
+          )
+        )
       ),
       fluidRow(
         box(width = 12,
@@ -83,11 +98,7 @@ body <- dashboardBody(
           tabPanel(title = "Table",
                    DT::dataTableOutput("sorter")
           ),
-          tabPanel(title = "Histogram",
-                   plotOutput("hist_plot")
-          ),
-          tabPanel(title = "CDF",
-                   plotOutput("cdf")
+          tabPanel(title = "Download"
           )
         )     
       )

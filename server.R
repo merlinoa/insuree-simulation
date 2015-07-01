@@ -192,9 +192,10 @@ shinyServer(function(input, output) {
       geom_histogram(fill = "white", colour = "black") +
       scale_x_continuous(labels = dollar) +
       xlab("Benefit Payments") +
-      ylab("Count of Observations") +
-      ggtitle("Present Value of Death Benefit for all Insurees")
-  })
+      ylab("Observations") +
+      ggtitle("Present Value of Death Benefits")
+  },
+  height = 200)
   
   output$cdf <- renderPlot({
     ggplot(data.frame(loss = benefit()), aes(x = loss)) +
@@ -202,8 +203,9 @@ shinyServer(function(input, output) {
       xlab("Benefit Payments") +
       ylab("P(benefit <= x)") +
       scale_x_continuous(labels = dollar) +
-      ggtitle("Present Value of Death Benefit for all Insurees")
-  })
+      ggtitle("Present Value of Death Benefits")
+  },
+  height = 200)
   
   data_table <- reactive({
     table_values <- function(obs) {
