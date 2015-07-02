@@ -78,10 +78,10 @@ body <- dashboardBody(
             valueBoxOutput("b_deferral", width = 4),
             valueBoxOutput("b_effective", width = 4)
         )
-      ),
-      fluidRow(
-        valueBoxOutput("avg_age", width = 6)
       )
+      #fluidRow(
+      #  valueBoxOutput("avg_age", width = 6)
+      #)
     ),
     # insurees table tab
     tabItem(tabName = "insurees",

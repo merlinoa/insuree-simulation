@@ -158,15 +158,16 @@ shinyServer(function(input, output) {
     )
   })
   
-  output$avg_age <- renderValueBox({
-    a_age <- round(mean(age()),2)
-    valueBox(
-      value = a_age,
-      subtitle = "Average Insuree Age",
-      icon = icon("calendar"),
-      color = "purple"
-    )
-  })
+  # May want to move to Insurees tab
+  #output$avg_age <- renderValueBox({
+  #  a_age <- round(mean(age()),2)
+  #  valueBox(
+  #    value = a_age,
+  #    subtitle = "Average Insuree Age",
+  #    icon = icon("calendar"),
+  #    color = "purple"
+  #  )
+  #})
   
   reserve_n <- reactive({
     quantile(benefit(), input$ci)
