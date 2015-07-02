@@ -195,9 +195,9 @@ shinyServer(function(input, output) {
     ggplot(data.frame(loss = benefit()), aes(x = loss)) +
       geom_histogram(fill = "white", colour = "black") +
       scale_x_continuous(labels = dollar) +
-      xlab("Reserve") +
+      xlab("Reserve: Present Value of Benefits") +
       ylab("Observations") +
-      ggtitle("Present Value of Death Benefits") +
+      ggtitle("Simulated Death Benefits") +
       geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
   },
   height = 200)
@@ -205,10 +205,10 @@ shinyServer(function(input, output) {
   output$cdf <- renderPlot({
     ggplot(data.frame(loss = benefit()), aes(x = loss)) +
       stat_ecdf() +
-      xlab("Reserve") +
+      xlab("Reserve: Present Value of Benefits") +
       ylab("P(benefit <= x)") +
       scale_x_continuous(labels = dollar) +
-      ggtitle("Present Value of Death Benefits") +
+      ggtitle("Simulated Death Benefits") +
       geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
   },
   height = 200)
