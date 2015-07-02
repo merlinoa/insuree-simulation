@@ -199,7 +199,12 @@ shinyServer(function(input, output) {
       xlab("Reserve: Present Value of Benefits") +
       ylab("Observations") +
       ggtitle("Simulated Death Benefits") +
-      geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
+      geom_vline(xintercept = mean(benefit()), colour="blue", size = 1) +
+      geom_vline(xintercept = reserve_n(), colour="green4", size = 2) +
+      geom_text(data = NULL, x = mean(benefit()), y = 0, label = "mean", angle = 90, 
+                vjust = -0.4, size = 5, hjust = -2, family = "Courier") +
+      geom_text(data = NULL, x = reserve_n(), y = 0, label = input$ci, 
+                angle = 90, vjust = -0.4, size = 5, hjust = -2, family = "Courier")
   },
   height = 200)
   
@@ -210,7 +215,12 @@ shinyServer(function(input, output) {
       ylab("P(benefit <= x)") +
       scale_x_continuous(labels = dollar) +
       ggtitle("Simulated Death Benefits") +
-      geom_vline(xintercept = reserve_n(), colour="green4", size = 2)
+      geom_vline(xintercept = mean(benefit()), colour="blue", size = 1) +
+      geom_vline(xintercept = reserve_n(), colour="green4", size = 2) +
+      geom_text(data = NULL, x = mean(benefit()), y = 0, label = "mean", angle = 90, 
+                vjust = -0.4, size = 5, hjust = -2, family = "Courier") +
+      geom_text(data = NULL, x = reserve_n(), y = 0, label = input$ci, 
+                angle = 90, vjust = -0.4, size = 5, hjust = -2, family = "Courier")
   },
   height = 200)
   
