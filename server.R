@@ -36,11 +36,6 @@ shinyServer(function(input, output) {
     pmin(inter / dyears(1), df$term)
   })
   
-  # benefit length
-  benefit_length <- reactive({
-    ceiling(age() + unearned_t_() + unearned_m_()) - floor(age() + unearned_m_())
-  })
-  
   # data frame to display
   insurees_data <- reactive({
     l <- length(names(df))
@@ -49,19 +44,14 @@ shinyServer(function(input, output) {
   
   # male actuarial tables
   male_qx <- reactive({
-    qx_male <- insuree::LifeTable(x = qx_data$x,
-                                  t = rep(1, length(qx_data$x)),
-                                  q_x = qx_data$male_qx)
-    qx_male <- insuree::ActuarialTable(i = rep(input$i, 
-                                    times = length(qx_male@x)), qx_male)
+    insuree::LifeTable(x = c(qx_data$x, max(qx_data$x) + 1),
+                       q_x = c(qx_data$male_qx, NA))
   })
   
   # female actuarial table
   female_qx <- reactive({
-    qx_female <- insuree::LifeTable(x = qx_data$x,
-                                    t = rep(1, length(qx_data$x)),
-                                    q_x = qx_data$female_qx)
-    insuree::ActuarialTable(i = rep(input$i, times = length(qx_female@x)), qx_female)
+    insuree::LifeTable(x = c(qx_data$x, max(qx_data$x) + 1),
+                       q_x = c(qx_data$female_qx, NA))
   })
   
   # create insuree objects
@@ -74,16 +64,16 @@ shinyServer(function(input, output) {
         holder[[j]] <- insuree::Insuree(x_ = k[j],
                                         t_ = unearned_t_()[j],
                                         m_ = unearned_m_()[j],
-                                        benefit = rep(my_table$benefit[j],
-                                                      times = benefit_length()[j]),
+                                        benefit_t = unearned_t_()[j],
+                                        benefit_value = my_table$benefit[j],
                                         male_qx()
                                         )
       } else {
         holder[[j]] <- insuree::Insuree(x_ = k[j],
                                         t_ = unearned_t_()[j],
                                         m_ = unearned_m_()[j],
-                                        benefit = rep(my_table$benefit[j],
-                                                      times = benefit_length()[j]),
+                                        benefit_t = unearned_t_()[j],
+                                        benefit_value = my_table$benefit[j],
                                         female_qx()
                                        )
       }
@@ -93,10 +83,10 @@ shinyServer(function(input, output) {
   
   # run simulation
   benefit <- reactive({
+    pool <- Pool(insurees = insurees())
     set.seed(12345)
-    out <-lapply(insurees()[df$issue_date <= input$date], function(k) insuree::rpv(k, n = n)$pv)
-    out <- matrix(unlist(out), ncol = n, byrow = TRUE)
-    apply(out, 2, sum)
+    out <- insuree::rpv(pool, n = n, interest = input$i)
+    apply(summary(out), 1, sum)
   })
   
   # start of display ----------------------------------------------------------

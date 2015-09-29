@@ -119,11 +119,7 @@ body <- dashboardBody(
             within the term specified by the insuree's policy.  The insuree can 
             choose to have a deferral period before the term period begins.  If the
             insuree dies during the deferral period, no beath benefit will be paid.
-            All death benefits are paid at the midpoint of the term year of death, unless the
-            insuree dies during a partial year in which case the benefit is paid at the midpoint
-            of the partial year period. (e.g. if the insuree is 75.5 at the reserve evaluation date,
-            and the simulation has her dying between age 75.5 and age 76, the benefit benefit will be discounted for 0.25
-            years.)"),
+            All death benefits are paid at the exact moment of death."),
           h3("Simulation General"),
           p("The future life of each insuree is simulated 5,000 times.  The reserve confidence 
             levels are established for all insurees grouped together.  The ", code("insuree"), " 
